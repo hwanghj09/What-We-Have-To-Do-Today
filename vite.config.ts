@@ -8,30 +8,24 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
+      includeAssets: ['favicon.ico', 'robots.txt', 'apple-touch-icon.png'],
       manifest: {
-        name: 'Todo App',
-        short_name: 'Todo',
-        description: 'A simple Todo application.',
+        name: 'What We Have To Do Today',
+        short_name: 'Todo App',
+        description: 'Todo app',
         theme_color: '#ffffff',
+        display: 'standalone',
+        background_color: '#ffffff',
         icons: [
           {
-            src: 'pwa-192x192.png',
-            sizes: '192x192',
-            type: 'image/png',
-          },
-          {
-            src: 'pwa-512x512.png',
+            src: '/icons/logo.png',
             sizes: '512x512',
             type: 'image/png',
-          },
-          {
-            src: 'maskable-icon-512x512.png',
-            sizes: '512x512',
-            type: 'image/png',
-            purpose: 'maskable',
-          },
+          }
         ],
+      },
+      devOptions: {
+        enabled: true, // 개발 환경에서도 PWA 사용 가능
       },
     }),
   ],
