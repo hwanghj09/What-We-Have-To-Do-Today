@@ -4,18 +4,23 @@ import Cookies from 'js-cookie'
 interface Todo {
   id: number
   text: string
+  checked: boolean
 }
 
 function Home() {
-  const [todos, setTodos] = useState<Todo[]>([])
-  const [text, setText] = useState('')
-
-  useEffect(() => {
+  const [todos, setTodos] = useState<Todo[]>(() => {
     const savedTodos = Cookies.get('todos')
     if (savedTodos) {
-      setTodos(JSON.parse(savedTodos))
+      try {
+        return JSON.parse(savedTodos)
+      } catch (e) {
+        console.error('Error parsing todos from cookies', e)
+        return []
+      }
     }
-  }, [])
+    return []
+  })
+  const [text, setText] = useState('')
 
   useEffect(() => {
     Cookies.set('todos', JSON.stringify(todos))
@@ -26,6 +31,7 @@ function Home() {
       const newTodo: Todo = {
         id: Date.now(),
         text: text,
+        checked: false,
       }
       setTodos([...todos, newTodo])
       setText('')
@@ -36,13 +42,25 @@ function Home() {
     setTodos(todos.filter(todo => todo.id !== id))
   }
 
+  const toggleTodo = (id: number) => {
+    setTodos(
+      todos.map(todo =>
+        todo.id === id ? { ...todo, checked: !todo.checked } : todo
+      )
+    )
+  }
+
   return (
     <>
       <h1>Todo List</h1>
       <div className='todolist'>
         {todos.map(todo => (
           <div key={todo.id}>
-            <input type="checkbox" />
+            <input
+              type="checkbox"
+              checked={todo.checked}
+              onChange={() => toggleTodo(todo.id)}
+            />
             <span>{todo.text}</span>
             <button onClick={() => removeTodo(todo.id)}>Remove</button>
           </div>
