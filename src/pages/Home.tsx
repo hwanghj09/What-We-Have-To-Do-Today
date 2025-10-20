@@ -52,7 +52,7 @@ function Home() {
 
   return (
     <>
-      <h1>Todo List</h1>
+      <h1>What We Have To Do Today</h1>
       <div className='todolist'>
         {todos.map(todo => (
           <div key={todo.id}>
