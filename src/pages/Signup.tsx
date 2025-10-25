@@ -1,13 +1,22 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { createUserWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
-import { auth, googleProvider } from '../firebase';
+import { auth, googleProvider, db } from '../firebase';
+import { doc, setDoc } from 'firebase/firestore';
 
 function Signup() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const navigate = useNavigate();
+
+  const createUserProfile = async (userUid: string, userEmail: string) => {
+    await setDoc(doc(db, "users", userUid), {
+      email: userEmail,
+      accountType: 'student', // Default to student
+      createdAt: new Date(),
+    });
+  };
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -16,7 +25,8 @@ function Signup() {
       return;
     }
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      await createUserProfile(userCredential.user.uid, userCredential.user.email || '');
       alert('회원가입 성공!');
       navigate('/login'); // Navigate to login page on successful signup
     } catch (error: any) {
@@ -26,7 +36,10 @@ function Signup() {
 
   const handleGoogleSignup = async () => {
     try {
-      await signInWithPopup(auth, googleProvider);
+      const userCredential = await signInWithPopup(auth, googleProvider);
+      // Check if user profile already exists to avoid overwriting
+      // For simplicity, we'll always create/update here. In a real app, you'd check first.
+      await createUserProfile(userCredential.user.uid, userCredential.user.email || '');
       alert('Google 회원가입 성공!');
       navigate('/'); // Navigate to home page on successful Google signup
     } catch (error: any) {

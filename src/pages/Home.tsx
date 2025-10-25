@@ -37,6 +37,7 @@ function Home() {
       {user ? (
         <div>
           <p>환영합니다, {user.email}님!</p>
+          <a href="/setting">설정 페이지로 이동</a>
           <button onClick={handleLogout} style={{ padding: '10px 15px', borderRadius: '4px', border: 'none', backgroundColor: '#dc3545', color: 'white', cursor: 'pointer', marginTop: '10px' }}>
             로그아웃
           </button>
