@@ -1,82 +1,54 @@
-import { useState, useEffect } from 'react'
-import Cookies from 'js-cookie'
-
-interface Todo {
-  id: number
-  text: string
-  checked: boolean
-}
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
+import type { User } from 'firebase/auth';
+import { auth } from '../firebase';
 
 function Home() {
-  const [todos, setTodos] = useState<Todo[]>(() => {
-    const savedTodos = Cookies.get('todos')
-    if (savedTodos) {
-      try {
-        return JSON.parse(savedTodos)
-      } catch (e) {
-        console.error('Error parsing todos from cookies', e)
-        return []
-      }
-    }
-    return []
-  })
-  const [text, setText] = useState('')
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    Cookies.set('todos', JSON.stringify(todos))
-  }, [todos])
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      setLoading(false);
+    });
+    return () => unsubscribe();
+  }, []);
 
-  const addTodo = () => {
-    if (text.trim() !== '') {
-      const newTodo: Todo = {
-        id: Date.now(),
-        text: text,
-        checked: false,
-      }
-      setTodos([...todos, newTodo])
-      setText('')
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      alert('로그아웃 성공!');
+      navigate('/login');
+    } catch (error: any) {
+      alert(`로그아웃 실패: ${error.message}`);
     }
-  }
+  };
 
-  const removeTodo = (id: number) => {
-    setTodos(todos.filter(todo => todo.id !== id))
-  }
-
-  const toggleTodo = (id: number) => {
-    setTodos(
-      todos.map(todo =>
-        todo.id === id ? { ...todo, checked: !todo.checked } : todo
-      )
-    )
+  if (loading) {
+    return <div>Loading...</div>;
   }
 
   return (
-    <>
+    <div style={{ padding: '20px' }}>
       <h1>What We Have To Do Today</h1>
-      <div className='todolist'>
-        {todos.map(todo => (
-          <div key={todo.id}>
-            <input
-              type="checkbox"
-              checked={todo.checked}
-              onChange={() => toggleTodo(todo.id)}
-            />
-            <span>{todo.text}</span>
-            <button onClick={() => removeTodo(todo.id)}>Remove</button>
-          </div>
-        ))}
-      </div>
-      <input
-        type="text"
-        placeholder="Type something"
-        className='test'
-        value={text}
-        onChange={e => setText(e.currentTarget.value)}
-        onKeyPress={e => e.key === 'Enter' && addTodo()}
-      />
-      <button onClick={addTodo}>Add Todo</button>
-    </>
-  )
+      {user ? (
+        <div>
+          <p>환영합니다, {user.email}님!</p>
+          <button onClick={handleLogout} style={{ padding: '10px 15px', borderRadius: '4px', border: 'none', backgroundColor: '#dc3545', color: 'white', cursor: 'pointer', marginTop: '10px' }}>
+            로그아웃
+          </button>
+        </div>
+      ) : (
+        <div>
+          <p>로그인하세요</p>
+          <a href="/login">로그인 페이지로 이동</a>
+        </div>
+      )}
+    </div>
+  );
 }
 
 export default Home

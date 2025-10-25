@@ -1,6 +1,5 @@
-import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { initializeApp } from "firebase/app";
+import { getAuth, GoogleAuthProvider } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDdtDNfqvrRpppbaE4cjYBD8QejI_4-3SA",
@@ -11,9 +10,7 @@ const firebaseConfig = {
   appId: "1:129752079783:web:5a68510d4857e85d50ea82"
 };
 
-// Initialize Firebase
+// Firebase 초기화
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-export { app, auth, db };
+export const auth = getAuth(app);
+export const googleProvider = new GoogleAuthProvider();

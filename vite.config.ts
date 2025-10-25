@@ -25,7 +25,7 @@ export default defineConfig({
         ],
       },
       devOptions: {
-        enabled: true, // 개발 환경에서도 PWA 사용 가능
+        enabled: false, // 개발 환경에서도 PWA 사용 가능
       },
     }),
   ],

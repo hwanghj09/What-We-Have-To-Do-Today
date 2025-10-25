@@ -1,64 +1,80 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import Home from './pages/Home';
-import LoginPage from './pages/LoginPage';
-import SignupPage from './pages/SignupPage';
-import StudentDashboard from './pages/StudentDashboard';
-import TeacherDashboard from './pages/TeacherDashboard';
-import CreateClassPage from './pages/CreateClassPage';
-import InviteStudentsPage from './pages/InviteStudentsPage';
-import CreateHomeworkPage from './pages/CreateHomeworkPage';
-import ProtectedRoute from './components/ProtectedRoute';
+import Login from './pages/Login';
+import Signup from './pages/Signup';
+import { useRegisterSW } from 'virtual:pwa-register/react';
 
 function App() {
+  const {
+    offlineReady: [offlineReady, setOfflineReady],
+    needRefresh: [needRefresh, setNeedRefresh],
+    updateServiceWorker,
+  } = useRegisterSW({
+    onRegistered(r) {
+      console.log('SW Registered: ' + r);
+    },
+    onRegisterError(error) {
+      console.log('SW registration error', error);
+    },
+  });
+
+  const close = () => {
+    setOfflineReady(false);
+    setNeedRefresh(false);
+  };
+
   return (
-    <BrowserRouter >
+    <BrowserRouter>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/signup" element={<SignupPage />} />
-        <Route
-          path="/student"
-          element={
-            <ProtectedRoute allowedRoles={['student']}>
-              <StudentDashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/teacher"
-          element={
-            <ProtectedRoute allowedRoles={['teacher']}>
-              <TeacherDashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/create-class"
-          element={
-            <ProtectedRoute allowedRoles={['teacher']}>
-              <CreateClassPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/invite-students/:classId"
-          element={
-            <ProtectedRoute allowedRoles={['teacher']}>
-              <InviteStudentsPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/create-homework/:classId"
-          element={
-            <ProtectedRoute allowedRoles={['teacher']}>
-              <CreateHomeworkPage />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
       </Routes>
+
+      {(offlineReady || needRefresh) && (
+        <div style={{
+          position: 'fixed',
+          bottom: '20px',
+          left: '20px',
+          backgroundColor: '#333',
+          color: 'white',
+          padding: '10px 20px',
+          borderRadius: '5px',
+          zIndex: 1000,
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px'
+        }}>
+          {offlineReady ? (
+            <span>앱을 오프라인에서 사용할 준비가 되었습니다.</span>
+          ) : (
+            <span>새로운 버전이 있습니다. 업데이트하려면 새로고침하세요.</span>
+          )}
+          {needRefresh && (
+            <button onClick={() => updateServiceWorker(true)} style={{
+              backgroundColor: '#007bff',
+              color: 'white',
+              border: 'none',
+              padding: '5px 10px',
+              borderRadius: '3px',
+              cursor: 'pointer'
+            }}>
+              새로고침
+            </button>
+          )}
+          <button onClick={close} style={{
+            backgroundColor: 'transparent',
+            color: 'white',
+            border: 'none',
+            fontSize: '1.2em',
+            cursor: 'pointer'
+          }}>
+            &times;
+          </button>
+        </div>
+      )}
     </BrowserRouter>
-  )
+  );
 }
 
 export default App
