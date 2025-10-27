@@ -1,38 +1,45 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { auth, db } from '../firebase';
-import { doc, setDoc } from 'firebase/firestore';
-import { onAuthStateChanged } from 'firebase/auth';
+import { onAuthStateChanged, type User } from 'firebase/auth';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
 
 function CreateClass() {
   const navigate = useNavigate();
-  const [classname, setClassName] = useState('');
+  const [user, setUser] = useState<User | null>(null);
   const [userUID, setUserUID] = useState('');
+  const [classname, setClassName] = useState('');
 
-  // 로그인한 사용자의 UID 가져오기
+  // 로그인 유저 정보 가져오기
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      if (currentUser) setUserUID(currentUser.uid);
-      else navigate('/login'); // 로그인 안했으면 로그인 페이지로 이동
+      if (currentUser) {
+        setUser(currentUser);
+        setUserUID(currentUser.uid);
+      } else {
+        navigate('/login');
+      }
     });
     return () => unsubscribe();
   }, [navigate]);
 
   const createClass = async () => {
     if (!classname) return alert('클래스 이름을 입력해주세요');
-    if (!userUID) return alert('사용자 정보를 불러오는 중입니다. 잠시만 기다려주세요.');
 
-    const classid = crypto.randomUUID(); // 랜덤 ID 생성
+    const classid = crypto.randomUUID(); // 문서 ID
+    const inviteCode = crypto.randomUUID().slice(0, 6); // 6자리 초대코드
 
     try {
       const classDocRef = doc(db, 'classes', classid);
       await setDoc(classDocRef, {
         classname,
-        managerId: userUID, // 🔹 오타 수정
+        managerId: userUID,
+        inviteCode,
+        students: [], // 학생 참여 배열
         createdAt: new Date(),
       });
-      alert('클래스 생성 성공!');
-      navigate('/'); // 홈으로 이동
+      alert(`클래스 생성 성공! 초대코드: ${inviteCode}`);
+      navigate('/');
     } catch (err: any) {
       alert(`클래스 생성 실패: ${err.message}`);
     }
@@ -46,17 +53,11 @@ function CreateClass() {
         placeholder="클래스 이름"
         value={classname}
         onChange={(e) => setClassName(e.target.value)}
-        style={{ display: 'block', marginBottom: '10px', padding: '8px', width: '300px' }}
+        style={{ display: 'block', marginBottom: '10px', padding: '8px' }}
       />
-      <button
-        onClick={createClass}
-        style={{ padding: '10px 15px', cursor: 'pointer', borderRadius: '4px', backgroundColor: '#28a745', color: 'white', border: 'none' }}
-      >
+      <button onClick={createClass} style={{ padding: '10px 15px', cursor: 'pointer' }}>
         클래스 생성
       </button>
-      <p style={{ marginTop: '10px' }}>
-        <Link to="/">홈으로 돌아가기</Link>
-      </p>
     </div>
   );
 }

@@ -1,118 +1,116 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { onAuthStateChanged, signOut } from 'firebase/auth';
-import type { User } from 'firebase/auth';
 import { auth, db } from '../firebase';
-import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
+import { onAuthStateChanged, signOut, type User } from 'firebase/auth';
+import {
+  collection,
+  getDocs,
+  getDoc,
+  query,
+  where,
+  doc,
+  updateDoc,
+  arrayUnion
+} from 'firebase/firestore';
 
-interface ClassData {
+interface Invite {
+  inviteId: string;
+  classId: string;
   classname: string;
-  createdAt: any;
 }
 
 function Home() {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
   const [nickname, setNickname] = useState('');
   const [accountType, setAccountType] = useState<'student' | 'teacher' | ''>('');
-  const [classes, setClasses] = useState<ClassData[]>([]);
+  const [classes, setClasses] = useState<any[]>([]);
+  const [pendingInvites, setPendingInvites] = useState<Invite[]>([]);
   const navigate = useNavigate();
 
-  // Auth 상태 확인
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      setLoading(false);
-    });
-    return () => unsubscribe();
-  }, []);
-
-  // Firestore에서 유저 정보 가져오기
-  useEffect(() => {
-    if (user) {
-      const fetchUserData = async () => {
-        const userDoc = await getDoc(doc(db, 'users', user.uid));
-        if (userDoc.exists()) {
-          const data = userDoc.data();
-          setNickname(data.displayName || '');
-          setAccountType(data.accountType || '');
-        }
-      };
-      fetchUserData();
-    }
-  }, [user]);
-
-  // Firestore에서 클래스 리스트 가져오기
-  useEffect(() => {
-    const fetchClasses = async () => {
-      const querySnapshot = await getDocs(collection(db, 'classes'));
-      const classList: ClassData[] = [];
-      querySnapshot.forEach((doc) => {
-        classList.push(doc.data() as ClassData);
-      });
-      setClasses(classList);
-    };
-    fetchClasses();
-  }, []);
-
-  const handleLogout = async () => {
-    try {
-      await signOut(auth);
-      alert('로그아웃 성공!');
+useEffect(() => {
+  const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+    if (!currentUser) {
       navigate('/login');
-    } catch (error: any) {
-      alert(`로그아웃 실패: ${error.message}`);
+      return;
+    }
+
+    setUser(currentUser);
+    setNickname(currentUser.displayName || '');
+
+    try {
+      // Firestore에서 계정 정보 가져오기
+      const userDocRef = doc(db, 'users', currentUser.uid);
+      const userSnap = await getDoc(userDocRef);
+      if (userSnap.exists()) {
+        const data = userSnap.data();
+        setAccountType(data.accountType || '');
+      } else {
+        // 문서가 없으면 student로 기본 설정
+        setAccountType('student');
+      }
+    } catch (err) {
+      console.error(err);
+      setAccountType('student');
+    }
+
+    fetchClasses(currentUser);
+  });
+  return () => unsubscribe();
+}, [navigate]);
+
+
+  // 클래스 가져오기
+  const fetchClasses = async (currentUser: User) => {
+    try {
+      const classesSnapshot = await getDocs(collection(db, 'classes'));
+      const classesList = classesSnapshot.docs
+        .filter(doc => 
+          doc.data().managerId === currentUser.uid || doc.data().students?.includes(currentUser.uid)
+        )
+        .map(doc => ({ id: doc.id, ...doc.data() }));
+      setClasses(classesList);
+    } catch (err: any) {
+      console.error(err);
     }
   };
 
-  if (loading) return <div>Loading...</div>;
+
+  const handleLogout = async () => {
+    await signOut(auth);
+    navigate('/login');
+  };
 
   return (
     <div style={{ padding: '20px' }}>
       <h1>What We Have To Do Today</h1>
-      {user ? (
-        <div>
-          <p>환영합니다, {nickname}님!</p>
-          <Link to="/setting">설정 페이지로 이동</Link>
-          <button
-            onClick={handleLogout}
-            style={{ padding: '10px 15px', borderRadius: '4px', border: 'none', backgroundColor: '#dc3545', color: 'white', cursor: 'pointer', marginTop: '10px' }}
-          >
-            로그아웃
-          </button>
+      <p>환영합니다, {nickname}님!</p>
+      <button onClick={handleLogout}>로그아웃</button>
+      <Link to="/setting" style={{ marginLeft: '10px' }}>설정 페이지로 이동</Link>
 
-          {accountType === 'teacher' && (
-            <div style={{ marginTop: '20px' }}>
-              <Link
-                to="/create-class"
-                style={{ padding: '10px 15px', borderRadius: '4px', border: 'none', backgroundColor: '#28a745', color: 'white', textDecoration: 'none' }}
-              >
-                클래스 생성하기
-              </Link>
-            </div>
-          )}
-
-          <div style={{ marginTop: '20px' }}>
-            <h2>클래스 목록</h2>
-            {classes.length > 0 ? (
-              <ul>
-                {classes.map((cls, index) => (
-                  <li key={index}>
-                    {cls.classname} ({cls.createdAt.toDate ? cls.createdAt.toDate().toLocaleString() : cls.createdAt})
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p>등록된 클래스가 없습니다.</p>
-            )}
-          </div>
-        </div>
-      ) : (
-        <div>
-          <p>로그인하세요</p>
-          <Link to="/login">로그인 페이지로 이동</Link>
+      {accountType === 'teacher' && (
+        <div style={{ marginTop: '20px' }}>
+          <Link to="/create-class">클래스 생성하기</Link>
         </div>
       )}
+      {accountType === 'student' && (
+  <div>
+    <Link to="/join-class">클래스 참여하기</Link>
+  </div>
+)}
+      <div style={{ marginTop: '20px' }}>
+        <h2>참여 중인 클래스</h2>
+        {classes.length === 0 ? (
+          <p>참여 중인 클래스가 없습니다.</p>
+        ) : (
+          <ul>
+            {classes.map(cls => (
+              <li key={cls.id}>
+                {cls.classname} {cls.managerId === user?.uid && <Link to={`/class-setting/${cls.id}`} style={{ marginLeft: '10px' }}>(설정)</Link>}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </div>
   );
 }

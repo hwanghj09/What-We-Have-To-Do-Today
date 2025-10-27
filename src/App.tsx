@@ -4,7 +4,10 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Setting from './pages/Setting';
 import CreateClass from './pages/CreateClass';
+import JoinClass from './pages/JoinClass';
+import ClassSetting from './pages/ClassSetting';
 import { useRegisterSW } from 'virtual:pwa-register/react';
+
 
 function App() {
   const {
@@ -33,6 +36,8 @@ function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/setting" element={<Setting />} />
         <Route path="/create-class" element={<CreateClass />} />
+        <Route path="/join-class" element={<JoinClass />} />
+        <Route path="/class-setting/:classId" element={<ClassSetting />} />
       </Routes>
 
       {(offlineReady || needRefresh) && (

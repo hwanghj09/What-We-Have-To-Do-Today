@@ -12,7 +12,6 @@ function Login() {
     e.preventDefault();
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      alert('로그인 성공!');
       navigate('/'); // Navigate to home page on successful login
     } catch (error: any) {
       alert(`로그인 실패: ${error.message}`);
@@ -22,7 +21,6 @@ function Login() {
   const handleGoogleLogin = async () => {
     try {
       await signInWithPopup(auth, googleProvider);
-      alert('Google 로그인 성공!');
       navigate('/'); // Navigate to home page on successful Google login
     } catch (error: any) {
       alert(`Google 로그인 실패: ${error.message}`);
