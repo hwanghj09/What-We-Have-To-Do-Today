@@ -16,7 +16,7 @@ function ClassSetting() {
   const [user, setUser] = useState<User | null>(null);
   const [className, setClassName] = useState('');
   const [students, setStudents] = useState<{ uid: string; email: string }[]>([]);
-
+  const [classinviteCode, setClassinviteCode] = useState('');
   useEffect(() => {
   const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
     if (!currentUser) {
@@ -28,7 +28,7 @@ function ClassSetting() {
     // 유저 정보 가져오기
     const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
     const accountType = userDoc.exists() ? userDoc.data().accountType : '';
-
+    setClassinviteCode(userDoc.exists() ? userDoc.data().inviteCode : '');
     if (accountType === 'student') {
       alert('학생은 클래스 설정 페이지에 접근할 수 없습니다.');
       navigate('/');
@@ -36,25 +36,28 @@ function ClassSetting() {
     }
 
     // 클래스 정보 가져오기
-    if (classId) {
-      const classDoc = await getDoc(doc(db, 'classes', classId));
-      if (!classDoc.exists()) {
-        alert('클래스를 찾을 수 없습니다.');
-        navigate('/');
-        return;
-      }
+    // 클래스 정보 가져오기
+if (classId) {
+  const classDoc = await getDoc(doc(db, 'classes', classId));
+  if (!classDoc.exists()) {
+    alert('클래스를 찾을 수 없습니다.');
+    navigate('/');
+    return;
+  }
 
-      const classData = classDoc.data();
-      if (classData.managerId !== currentUser.uid) {
-        alert('이 클래스의 매니저가 아니므로 접근할 수 없습니다.');
-        navigate('/');
-        return;
-      }
+  const classData = classDoc.data();
+  if (classData.managerId !== currentUser.uid) {
+    alert('이 클래스의 매니저가 아니므로 접근할 수 없습니다.');
+    navigate('/');
+    return;
+  }
 
-      // 매니저일 경우 클래스 데이터 세팅
-      setClassName(classData.classname || '');
-      setStudents(classData.students || []);
-    }
+  // 매니저일 경우 클래스 데이터 세팅
+  setClassName(classData.classname || '');
+  setStudents(classData.students || []);
+  setClassinviteCode(classData.inviteCode || ''); // 🔹 여기서 가져오기
+}
+
   });
 
   return () => unsubscribe();
@@ -88,7 +91,9 @@ function ClassSetting() {
     <div style={{ padding: '20px' }}>
       <h1>클래스 설정</h1>
       <Link to="/">홈으로 돌아가기</Link>
-
+      <div style={{ marginTop: '20px' }}>
+        <strong>클래스 초대 코드</strong> {classinviteCode}
+      </div>
       <div style={{ marginTop: '20px' }}>
         <h2>클래스 이름 변경</h2>
         <input

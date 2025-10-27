@@ -6,6 +6,7 @@ import Setting from './pages/Setting';
 import CreateClass from './pages/CreateClass';
 import JoinClass from './pages/JoinClass';
 import ClassSetting from './pages/ClassSetting';
+import CreateClassTodo from './pages/CreateClassToDo';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 
 
@@ -38,6 +39,7 @@ function App() {
         <Route path="/create-class" element={<CreateClass />} />
         <Route path="/join-class" element={<JoinClass />} />
         <Route path="/class-setting/:classId" element={<ClassSetting />} />
+        <Route path="/create-class-todo/:classId" element={<CreateClassTodo />} />
       </Routes>
 
       {(offlineReady || needRefresh) && (
