@@ -105,7 +105,7 @@ useEffect(() => {
           <ul>
             {classes.map(cls => (
               <li key={cls.id}>
-                {cls.classname} {cls.managerId === user?.uid && <Link to={`/class-setting/${cls.id}`} style={{ marginLeft: '10px' }}>(설정)</Link>}
+                <Link to={`/class-todo/${cls.id}`}>{cls.classname}</Link>{cls.managerId === user?.uid && <Link to={`/class-setting/${cls.id}`} style={{ marginLeft: '10px' }}>(설정)</Link>}
               </li>
             ))}
           </ul>
