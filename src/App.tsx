@@ -3,12 +3,13 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Setting from './pages/Setting';
+import CreateClass from './pages/CreateClass';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 
 function App() {
   const {
-    offlineReady: [offlineReady, setOfflineReady],
-    needRefresh: [needRefresh, setNeedRefresh],
+    offlineReady: [offlineReady, setOfflineReady], // 오프라인 준비 완료 상태
+    needRefresh: [needRefresh, setNeedRefresh], // 새 버전이 필요함 상태
     updateServiceWorker,
   } = useRegisterSW({
     onRegistered(r) {
@@ -31,6 +32,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/setting" element={<Setting />} />
+        <Route path="/create-class" element={<CreateClass />} />
       </Routes>
 
       {(offlineReady || needRefresh) && (

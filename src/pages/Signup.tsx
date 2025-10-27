@@ -8,12 +8,16 @@ function Signup() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [accountType, setAccountType] = useState('student');
+  const nicknames = ['용감한사자', '빠른토끼', '영리한여우', '강한곰', "멋쟁이토마토", '행복한고래', '빛나는별', '푸른하늘', '산뜻한바람', '따뜻한햇살'];
+  const randomNickname = nicknames[Math.floor(Math.random() * nicknames.length)];
+  const displayName = randomNickname;
   const navigate = useNavigate();
-
   const createUserProfile = async (userUid: string, userEmail: string) => {
     await setDoc(doc(db, "users", userUid), {
       email: userEmail,
-      accountType: 'student', // Default to student
+      accountType,
+      displayName,
       createdAt: new Date(),
     });
   };
@@ -75,6 +79,26 @@ function Signup() {
           required
           style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
         />
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          <label>
+            <input
+              type="radio"
+              value="student"
+              checked={accountType === 'student'}
+              onChange={(e) => setAccountType(e.target.value)}
+            />
+            학생
+          </label>
+          <label>
+            <input
+              type="radio"
+              value="teacher"
+              checked={accountType === 'teacher'}
+              onChange={(e) => setAccountType(e.target.value)}
+            />
+            선생님
+          </label>
+        </div>
         <button type="submit" style={{ padding: '10px 15px', borderRadius: '4px', border: 'none', backgroundColor: '#28a745', color: 'white', cursor: 'pointer' }}>
           회원가입
         </button>
