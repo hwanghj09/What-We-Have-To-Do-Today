@@ -16,39 +16,49 @@ function ClassSetting() {
   const [user, setUser] = useState<User | null>(null);
   const [className, setClassName] = useState('');
   const [students, setStudents] = useState<{ uid: string; email: string }[]>([]);
-  const [newEmail, setNewEmail] = useState('');
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      if (!currentUser) {
-        navigate('/login');
-        return;
-      }
-      setUser(currentUser);
-      if (classId) {
-        await fetchClassData(classId);
-      }
-    });
-    return () => unsubscribe();
-  }, [classId, navigate]);
+  const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+    if (!currentUser) {
+      navigate('/login');
+      return;
+    }
+    setUser(currentUser);
 
-  const fetchClassData = async (classId: string) => {
-    try {
-      const classDocRef = doc(db, 'classes', classId);
-      const classSnap = await getDoc(classDocRef);
-      if (!classSnap.exists()) {
+    // 유저 정보 가져오기
+    const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+    const accountType = userDoc.exists() ? userDoc.data().accountType : '';
+
+    if (accountType === 'student') {
+      alert('학생은 클래스 설정 페이지에 접근할 수 없습니다.');
+      navigate('/');
+      return;
+    }
+
+    // 클래스 정보 가져오기
+    if (classId) {
+      const classDoc = await getDoc(doc(db, 'classes', classId));
+      if (!classDoc.exists()) {
         alert('클래스를 찾을 수 없습니다.');
         navigate('/');
         return;
       }
-      const data = classSnap.data();
-      setClassName(data?.classname || '');
-      setStudents(data?.students || []);
-    } catch (err: any) {
-      console.error(err);
-      alert('클래스 데이터를 불러오는데 실패했습니다.');
+
+      const classData = classDoc.data();
+      if (classData.managerId !== currentUser.uid) {
+        alert('이 클래스의 매니저가 아니므로 접근할 수 없습니다.');
+        navigate('/');
+        return;
+      }
+
+      // 매니저일 경우 클래스 데이터 세팅
+      setClassName(classData.classname || '');
+      setStudents(classData.students || []);
     }
-  };
+  });
+
+  return () => unsubscribe();
+}, [classId, navigate]);
 
   const handleUpdateName = async () => {
     if (!classId) return;
