@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { auth, db } from '../firebase';
 import { onAuthStateChanged, signOut, type User } from 'firebase/auth';
@@ -6,25 +6,14 @@ import {
   collection,
   getDocs,
   getDoc,
-  query,
-  where,
   doc,
-  updateDoc,
-  arrayUnion
 } from 'firebase/firestore';
-
-interface Invite {
-  inviteId: string;
-  classId: string;
-  classname: string;
-}
 
 function Home() {
   const [user, setUser] = useState<User | null>(null);
   const [nickname, setNickname] = useState('');
   const [accountType, setAccountType] = useState<'student' | 'teacher' | ''>('');
   const [classes, setClasses] = useState<any[]>([]);
-  const [pendingInvites, setPendingInvites] = useState<Invite[]>([]);
   const navigate = useNavigate();
 
 useEffect(() => {

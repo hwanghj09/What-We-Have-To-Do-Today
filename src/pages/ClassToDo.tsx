@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { auth, db } from '../firebase';
 import { onAuthStateChanged, type User } from 'firebase/auth';
 import {
@@ -7,8 +7,6 @@ import {
   getDoc,
   updateDoc,
   arrayUnion,
-  arrayRemove,
-  setDoc
 } from 'firebase/firestore';
 
 interface Todo {

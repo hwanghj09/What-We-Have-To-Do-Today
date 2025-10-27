@@ -13,7 +13,7 @@ import {
 function ClassSetting() {
   const { classId } = useParams<{ classId: string }>();
   const navigate = useNavigate();
-  const [user, setUser] = useState<User | null>(null);
+  const [_user, setUser] = useState<User | null>(null);
   const [className, setClassName] = useState('');
   const [students, setStudents] = useState<{ uid: string; email: string }[]>([]);
   const [classinviteCode, setClassinviteCode] = useState('');
