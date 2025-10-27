@@ -3,7 +3,7 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Setting from './pages/Setting';
-import CreateClass from './pages/ClassCreate';
+import CreateClass from './pages/CreateClass';
 import JoinClass from './pages/JoinClass';
 import ClassSetting from './pages/ClassSetting';
 import { useRegisterSW } from 'virtual:pwa-register/react';
