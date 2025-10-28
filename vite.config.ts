@@ -11,8 +11,8 @@ export default defineConfig({
       includeAssets: ['favicon.ico', 'robots.txt', 'apple-touch-icon.png'],
       manifest: {
         name: 'What We Have To Do Today',
-        short_name: 'Todo App',
-        description: 'Todo app',
+        short_name: 'What We Do',
+        description: 'This is todo app for student, teacher',
         theme_color: '#ffffff',
         display: 'standalone',
         background_color: '#ffffff',

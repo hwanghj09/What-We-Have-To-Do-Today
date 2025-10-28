@@ -16,44 +16,40 @@ function Home() {
   const [classes, setClasses] = useState<any[]>([]);
   const navigate = useNavigate();
 
-useEffect(() => {
-  const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-    if (!currentUser) {
-      navigate('/login');
-      return;
-    }
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (!currentUser) {
+        navigate('/login');
+        return;
+      }
 
-    setUser(currentUser);
-    setNickname(currentUser.displayName || '');
+      setUser(currentUser);
+      setNickname(currentUser.displayName || '');
 
-    try {
-      // Firestore에서 계정 정보 가져오기
-      const userDocRef = doc(db, 'users', currentUser.uid);
-      const userSnap = await getDoc(userDocRef);
-      if (userSnap.exists()) {
-        const data = userSnap.data();
-        setAccountType(data.accountType || '');
-      } else {
-        // 문서가 없으면 student로 기본 설정
+      try {
+        const userDocRef = doc(db, 'users', currentUser.uid);
+        const userSnap = await getDoc(userDocRef);
+        if (userSnap.exists()) {
+          const data = userSnap.data();
+          setAccountType(data.accountType || '');
+        } else {
+          setAccountType('student');
+        }
+      } catch (err) {
+        console.error(err);
         setAccountType('student');
       }
-    } catch (err) {
-      console.error(err);
-      setAccountType('student');
-    }
 
-    fetchClasses(currentUser);
-  });
-  return () => unsubscribe();
-}, [navigate]);
+      fetchClasses(currentUser);
+    });
+    return () => unsubscribe();
+  }, [navigate]);
 
-
-  // 클래스 가져오기
   const fetchClasses = async (currentUser: User) => {
     try {
       const classesSnapshot = await getDocs(collection(db, 'classes'));
       const classesList = classesSnapshot.docs
-        .filter(doc => 
+        .filter(doc =>
           doc.data().managerId === currentUser.uid || doc.data().students?.includes(currentUser.uid)
         )
         .map(doc => ({ id: doc.id, ...doc.data() }));
@@ -63,43 +59,98 @@ useEffect(() => {
     }
   };
 
-
   const handleLogout = async () => {
     await signOut(auth);
     navigate('/login');
   };
 
   return (
-    <div style={{ padding: '20px' }}>
-      <h1>What We Have To Do Today</h1>
-      <p>환영합니다, {nickname}님!</p>
-      <button onClick={handleLogout}>로그아웃</button>
-      <Link to="/setting" style={{ marginLeft: '10px' }}>설정 페이지로 이동</Link>
+    <div className="min-h-screen bg-gray-50 text-gray-800 px-6 py-8">
+      {/* Header */}
+      <header className="flex flex-col sm:flex-row items-center justify-between border-b border-gray-200 pb-4 mb-8">
+        <h1 className="text-2xl font-semibold tracking-tight">
+          What We Have To Do Today
+        </h1>
+        <div className="flex items-center gap-3 mt-3 sm:mt-0">
+          {/* 설정 버튼 */}
+          <Link
+            to="/setting"
+            className="px-4 py-2 text-sm font-medium border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 hover:shadow-sm transition-all"
+          >
+            ⚙ 설정
+          </Link>
 
-      {accountType === 'teacher' && (
-        <div style={{ marginTop: '20px' }}>
-          <Link to="/create-class">클래스 생성하기</Link>
+          {/* 로그아웃 버튼 */}
+          <button
+            onClick={handleLogout}
+            className="px-4 py-2 text-sm font-medium bg-gray-800 text-white rounded-lg shadow-sm hover:bg-gray-900 hover:shadow-md active:scale-95 transition-all"
+          >
+            🚪 로그아웃
+          </button>
         </div>
-      )}
-      {accountType === 'student' && (
-  <div>
-    <Link to="/join-class">클래스 참여하기</Link>
-  </div>
-)}
-      <div style={{ marginTop: '20px' }}>
-        <h2>참여 중인 클래스</h2>
+      </header>
+
+      {/* Welcome */}
+      <section className="mb-8">
+        <p className="text-lg">
+          <span className="font-medium">{nickname}</span>님, 환영합니다 👋
+        </p>
+      </section>
+
+      {/* Quick Actions */}
+      <section className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm mb-8">
+        <h2 className="text-lg font-medium mb-4">빠른 작업</h2>
+        <div className="flex flex-wrap gap-3">
+          {accountType === 'teacher' && (
+            <Link
+              to="/create-class"
+              className="px-5 py-2.5 bg-gray-800 text-white text-sm font-medium rounded-lg shadow-sm hover:bg-gray-900 hover:shadow-md active:scale-95 transition-all"
+            >
+              ➕ 클래스 생성하기
+            </Link>
+          )}
+          {accountType === 'student' && (
+            <Link
+              to="/join-class"
+              className="px-5 py-2.5 bg-gray-700 text-white text-sm font-medium rounded-lg shadow-sm hover:bg-gray-800 hover:shadow-md active:scale-95 transition-all"
+            >
+              👥 클래스 참여하기
+            </Link>
+          )}
+        </div>
+      </section>
+
+      {/* Class List */}
+      <section className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+        <h2 className="text-lg font-medium mb-4">참여 중인 클래스</h2>
         {classes.length === 0 ? (
-          <p>참여 중인 클래스가 없습니다.</p>
+          <p className="text-gray-500 text-sm">참여 중인 클래스가 없습니다.</p>
         ) : (
-          <ul>
+          <ul className="space-y-2">
             {classes.map(cls => (
-              <li key={cls.id}>
-                <Link to={`/class-todo/${cls.id}`}>{cls.classname}</Link>{cls.managerId === user?.uid && <Link to={`/class-setting/${cls.id}`} style={{ marginLeft: '10px' }}>(설정)</Link>}
+              <li
+                key={cls.id}
+                className="flex items-center justify-between px-4 py-3 border border-gray-100 rounded-lg hover:bg-gray-50 hover:shadow-sm transition-all"
+              >
+                <Link
+                  to={`/class-todo/${cls.id}`}
+                  className="text-gray-800 hover:text-gray-900 font-medium"
+                >
+                  {cls.classname}
+                </Link>
+                {cls.managerId === user?.uid && (
+                  <Link
+                    to={`/class-setting/${cls.id}`}
+                    className="text-sm text-gray-500 hover:text-gray-700"
+                  >
+                    ⚙ 설정
+                  </Link>
+                )}
               </li>
             ))}
           </ul>
         )}
-      </div>
+      </section>
     </div>
   );
 }

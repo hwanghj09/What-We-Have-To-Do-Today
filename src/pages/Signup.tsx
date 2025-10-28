@@ -9,12 +9,18 @@ function Signup() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [accountType, setAccountType] = useState('student');
-  const nicknames = ['용감한사자', '빠른토끼', '영리한여우', '강한곰', "멋쟁이토마토", '행복한고래', '빛나는별', '푸른하늘', '산뜻한바람', '따뜻한햇살'];
+
+  const nicknames = [
+    '용감한사자', '빠른토끼', '영리한여우', '강한곰', '멋쟁이토마토',
+    '행복한고래', '빛나는별', '푸른하늘', '산뜻한바람', '따뜻한햇살'
+  ];
   const randomNickname = nicknames[Math.floor(Math.random() * nicknames.length)];
   const displayName = randomNickname;
+
   const navigate = useNavigate();
+
   const createUserProfile = async (userUid: string, userEmail: string) => {
-    await setDoc(doc(db, "users", userUid), {
+    await setDoc(doc(db, 'users', userUid), {
       email: userEmail,
       accountType,
       displayName,
@@ -32,7 +38,7 @@ function Signup() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       await createUserProfile(userCredential.user.uid, userCredential.user.email || '');
       alert('회원가입 성공!');
-      navigate('/login'); // Navigate to login page on successful signup
+      navigate('/login');
     } catch (error: any) {
       alert(`회원가입 실패: ${error.message}`);
     }
@@ -41,76 +47,95 @@ function Signup() {
   const handleGoogleSignup = async () => {
     try {
       const userCredential = await signInWithPopup(auth, googleProvider);
-      // Check if user profile already exists to avoid overwriting
-      // For simplicity, we'll always create/update here. In a real app, you'd check first.
       await createUserProfile(userCredential.user.uid, userCredential.user.email || '');
       alert('Google 회원가입 성공!');
-      navigate('/'); // Navigate to home page on successful Google signup
+      navigate('/');
     } catch (error: any) {
       alert(`Google 회원가입 실패: ${error.message}`);
     }
   };
 
   return (
-    <div style={{ padding: '20px' }}>
-      <h1>회원가입</h1>
-      <form onSubmit={handleSignup} style={{ display: 'flex', flexDirection: 'column', maxWidth: '300px', gap: '10px' }}>
-        <input
-          type="email"
-          placeholder="이메일"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
-        />
-        <input
-          type="password"
-          placeholder="비밀번호"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
-        />
-        <input
-          type="password"
-          placeholder="비밀번호 확인"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          required
-          style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
-        />
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-          <label>
-            <input
-              type="radio"
-              value="student"
-              checked={accountType === 'student'}
-              onChange={(e) => setAccountType(e.target.value)}
-            />
-            학생
-          </label>
-          <label>
-            <input
-              type="radio"
-              value="teacher"
-              checked={accountType === 'teacher'}
-              onChange={(e) => setAccountType(e.target.value)}
-            />
-            선생님
-          </label>
-        </div>
-        <button type="submit" style={{ padding: '10px 15px', borderRadius: '4px', border: 'none', backgroundColor: '#28a745', color: 'white', cursor: 'pointer' }}>
-          회원가입
+    <div className="flex items-center justify-center min-h-screen bg-gray-50">
+      <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-8 w-full max-w-md">
+        <h1 className="text-2xl font-semibold text-center text-gray-800 mb-6">회원가입</h1>
+
+        <form onSubmit={handleSignup} className="flex flex-col gap-4">
+          <input
+            type="email"
+            placeholder="이메일"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-gray-500 outline-none transition-all"
+          />
+          <input
+            type="password"
+            placeholder="비밀번호"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-gray-500 outline-none transition-all"
+          />
+          <input
+            type="password"
+            placeholder="비밀번호 확인"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-gray-500 outline-none transition-all"
+          />
+
+          <div className="flex justify-center gap-6 text-gray-700 mt-2">
+            <label className="flex items-center gap-2">
+              <input
+                type="radio"
+                value="student"
+                checked={accountType === 'student'}
+                onChange={(e) => setAccountType(e.target.value)}
+                className="accent-gray-700"
+              />
+              학생
+            </label>
+            <label className="flex items-center gap-2">
+              <input
+                type="radio"
+                value="teacher"
+                checked={accountType === 'teacher'}
+                onChange={(e) => setAccountType(e.target.value)}
+                className="accent-gray-700"
+              />
+              선생님
+            </label>
+          </div>
+
+          <button
+            type="submit"
+            className="w-full bg-gray-800 text-white py-2.5 rounded-lg hover:bg-gray-900 hover:shadow-md active:scale-[0.98] transition-all mt-2"
+          >
+            회원가입
+          </button>
+        </form>
+
+        <button
+          onClick={handleGoogleSignup}
+          className="w-full mt-3 bg-red-500 text-white py-2.5 rounded-lg hover:bg-red-600 hover:shadow-md active:scale-[0.98] transition-all"
+        >
+          Google로 회원가입
         </button>
-      </form>
-      <button onClick={handleGoogleSignup} style={{ padding: '10px 15px', borderRadius: '4px', border: 'none', backgroundColor: '#db4437', color: 'white', cursor: 'pointer', marginTop: '10px' }}>
-        Google로 회원가입
-      </button>
-      <p style={{ marginTop: '20px' }}>
-        이미 계정이 있으신가요? <Link to="/login">로그인</Link>
-      </p>
+
+        <p className="text-sm text-gray-600 text-center mt-6">
+          이미 계정이 있으신가요?{' '}
+          <Link
+            to="/login"
+            className="text-gray-800 font-medium hover:underline hover:text-gray-900"
+          >
+            로그인
+          </Link>
+        </p>
+      </div>
     </div>
   );
 }
 
-export default Signup
+export default Signup;

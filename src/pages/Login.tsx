@@ -12,7 +12,7 @@ function Login() {
     e.preventDefault();
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      navigate('/'); // Navigate to home page on successful login
+      navigate('/');
     } catch (error: any) {
       alert(`로그인 실패: ${error.message}`);
     }
@@ -21,44 +21,61 @@ function Login() {
   const handleGoogleLogin = async () => {
     try {
       await signInWithPopup(auth, googleProvider);
-      navigate('/'); // Navigate to home page on successful Google login
+      navigate('/');
     } catch (error: any) {
       alert(`Google 로그인 실패: ${error.message}`);
     }
   };
 
   return (
-    <div style={{ padding: '20px' }}>
-      <h1>로그인</h1>
-      <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', maxWidth: '300px', gap: '10px' }}>
-        <input
-          type="email"
-          placeholder="이메일"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
-        />
-        <input
-          type="password"
-          placeholder="비밀번호"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
-        />
-        <button type="submit" style={{ padding: '10px 15px', borderRadius: '4px', border: 'none', backgroundColor: '#007bff', color: 'white', cursor: 'pointer' }}>
-          로그인
+    <div className="flex items-center justify-center min-h-screen bg-gray-50">
+      <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-8 w-full max-w-md">
+        <h1 className="text-2xl font-semibold text-center text-gray-800 mb-6">로그인</h1>
+
+        <form onSubmit={handleLogin} className="flex flex-col gap-4">
+          <input
+            type="email"
+            placeholder="이메일"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-gray-500 outline-none transition-all"
+          />
+          <input
+            type="password"
+            placeholder="비밀번호"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-gray-500 outline-none transition-all"
+          />
+          <button
+            type="submit"
+            className="w-full bg-gray-800 text-white py-2.5 rounded-lg hover:bg-gray-900 hover:shadow-md active:scale-[0.98] transition-all"
+          >
+            로그인
+          </button>
+        </form>
+
+        <button
+          onClick={handleGoogleLogin}
+          className="w-full mt-3 bg-red-500 text-white py-2.5 rounded-lg hover:bg-red-600 hover:shadow-md active:scale-[0.98] transition-all"
+        >
+          Google로 로그인
         </button>
-      </form>
-      <button onClick={handleGoogleLogin} style={{ padding: '10px 15px', borderRadius: '4px', border: 'none', backgroundColor: '#db4437', color: 'white', cursor: 'pointer', marginTop: '10px' }}>
-        Google로 로그인
-      </button>
-      <p style={{ marginTop: '20px' }}>
-        계정이 없으신가요? <Link to="/signup">회원가입</Link>
-      </p>
+
+        <p className="text-sm text-gray-600 text-center mt-6">
+          계정이 없으신가요?{' '}
+          <Link
+            to="/signup"
+            className="text-gray-800 font-medium hover:underline hover:text-gray-900"
+          >
+            회원가입
+          </Link>
+        </p>
+      </div>
     </div>
   );
 }
 
-export default Login
+export default Login;
