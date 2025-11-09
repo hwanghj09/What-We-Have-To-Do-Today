@@ -4,12 +4,14 @@ import { auth, db } from '../firebase';
 import type { User } from 'firebase/auth';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { format, parseISO } from 'date-fns';
+import { ko } from 'date-fns/locale';
 
 interface Todo {
   id: string;
   title: string;
   completedBy: any[];
-  dueDate?: string;
+  deadline?: string;
 }
 
 function ClassSetting() {
@@ -22,7 +24,7 @@ function ClassSetting() {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [editingTodo, setEditingTodo] = useState<Todo | null>(null);
   const [newTitle, setNewTitle] = useState('');
-  const [newDueDate, setNewDueDate] = useState('');
+  const [newDeadline, setNewDeadline] = useState('');
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -105,7 +107,7 @@ function ClassSetting() {
   const handleEditTodo = (todo: Todo) => {
     setEditingTodo(todo);
     setNewTitle(todo.title);
-    setNewDueDate(todo.dueDate ? todo.dueDate.slice(0, 16) : '');
+    setNewDeadline(todo.deadline ? todo.deadline.slice(0, 16) : '');
   };
 
   const handleSaveTodo = async () => {
@@ -114,7 +116,7 @@ function ClassSetting() {
     const updatedTodo = {
       ...editingTodo,
       title: newTitle.trim(),
-      dueDate: newDueDate ? new Date(newDueDate).toISOString() : undefined,
+      deadline: newDeadline ? new Date(newDeadline).toISOString() : undefined,
     };
 
     const updatedTodos = todos.map((t) => (t.id === editingTodo.id ? updatedTodo : t));
@@ -193,9 +195,9 @@ function ClassSetting() {
                 >
                   <div>
                     <strong>{todo.title}</strong>{' '}
-                    {todo.dueDate && (
+                    {todo.deadline && (
                       <span className="text-sm text-gray-500">
-                        (기한: {new Date(todo.dueDate).toLocaleString()})
+                        (기한: {format(parseISO(todo.deadline), 'yyyy-MM-dd HH:mm', { locale: ko })})
                       </span>
                     )}
                   </div>
@@ -232,8 +234,8 @@ function ClassSetting() {
             <label className="block text-sm mb-1 text-gray-700">기한 설정</label>
             <input
               type="datetime-local"
-              value={newDueDate}
-              onChange={(e) => setNewDueDate(e.target.value)}
+              value={newDeadline}
+              onChange={(e) => setNewDeadline(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg mb-3"
             />
             <div className="flex gap-2">
@@ -263,7 +265,6 @@ function ClassSetting() {
               {students.map((stu) => (
                 <li key={stu.uid} className="text-sm text-gray-700">
                   {stu.email}{' '}
-                  <span className="text-gray-400">({stu.uid})</span>
                 </li>
               ))}
             </ul>

@@ -19,6 +19,7 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app); //authentication 모듈
 export const googleProvider = new GoogleAuthProvider(); //구글 인증 제공하는거
 export const db = getFirestore(app); //firestore 모듈
+export { app };
 
 enableIndexedDbPersistence(db).catch((err) => {
   if (err.code === 'failed-precondition') {

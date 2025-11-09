@@ -117,6 +117,12 @@ function Home() {
               👥 클래스 참여하기
             </Link>
           )}
+          <Link
+            to="/calendar"
+            className="px-5 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg shadow-sm hover:bg-blue-700 hover:shadow-md active:scale-95 transition-all"
+          >
+            📅 캘린더 보기
+          </Link>
         </div>
       </section>
 

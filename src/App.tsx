@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import Home from './pages/Home';
 import Login from './pages/Login';
@@ -7,8 +8,12 @@ import CreateClass from './pages/CreateClass';
 import JoinClass from './pages/JoinClass';
 import ClassSetting from './pages/ClassSetting';
 import ClassTodo from './pages/ClassToDo';
+import CalendarView from './pages/CalendarView';
 import { useRegisterSW } from 'virtual:pwa-register/react';
-
+import { requestForToken, onMessageListener } from './firebase-messaging-service';
+import { auth, db } from './firebase';
+import { doc, updateDoc } from 'firebase/firestore';
+import { onAuthStateChanged } from 'firebase/auth';
 
 function App() {
   const {
@@ -23,6 +28,34 @@ function App() {
       console.log('SW registration error', error);
     },
   });
+
+  useEffect(() => {
+    const requestPermission = async () => {
+      // IMPORTANT: Replace 'YOUR_VAPID_KEY' in firebase-messaging-service.ts with your actual VAPID key
+      const token = await requestForToken();
+      if (token) {
+        onAuthStateChanged(auth, (user) => {
+          if (user) {
+            const userDocRef = doc(db, 'users', user.uid);
+            updateDoc(userDocRef, { fcmToken: token })
+              .then(() => console.log('FCM token saved for user:', user.uid))
+              .catch((err) => console.error('Error saving FCM token:', err));
+          }
+        });
+      }
+    };
+
+    requestPermission();
+
+    onMessageListener()
+      .then((payload: any) => {
+        new Notification(payload.notification.title, {
+          body: payload.notification.body,
+          icon: '/icons/logo.png',
+        });
+      })
+      .catch((err) => console.log('failed: ', err));
+  }, []);
 
   const close = () => {
     setOfflineReady(false);
@@ -40,6 +73,7 @@ function App() {
         <Route path="/join-class" element={<JoinClass />} />
         <Route path="/class-setting/:classId" element={<ClassSetting />} />
         <Route path="/class-todo/:classId" element={<ClassTodo />} />
+        <Route path="/calendar" element={<CalendarView />} />
       </Routes>
 
       {(offlineReady || needRefresh) && (
@@ -88,4 +122,4 @@ function App() {
   );
 }
 
-export default App
+export default App;
